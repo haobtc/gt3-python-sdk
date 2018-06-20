@@ -5,12 +5,12 @@ import json
 import requests
 import time
 from hashlib import md5
-
+from django.conf import settings
 
 if sys.version_info >= (3,):
-    xrange = range    
+    xrange = range
 
-VERSION = "3.0.0"
+VERSION = "3.0.1"
 
 
 class GeetestLib(object):
@@ -32,6 +32,14 @@ class GeetestLib(object):
         self.sdk_version = VERSION
         self._response_str = ""
 
+    def get_request(self):
+        ss = requests.session()
+        if settings.USE_HTTP_PROXY:
+            proxy = settings.HTTP_PROXY
+        else:
+            proxy = {}
+        ss.proxies = proxy
+        return ss
 
     def pre_process(self, user_id=None,new_captcha=1,JSON_FORMAT=1,client_type="web",ip_address=""):
         """
@@ -87,8 +95,9 @@ class GeetestLib(object):
         else:
             register_url = "{api_url}{handler}?gt={captcha_ID}&json_format={JSON_FORMAT}&client_type={client_type}&ip_address={ip_address}".format(
                     api_url=self.API_URL, handler=self.REGISTER_HANDLER, captcha_ID=self.captcha_id,new_captcha=new_captcha,JSON_FORMAT=JSON_FORMAT,client_type=client_type,ip_address=ip_address)
+
         try:
-            response = requests.get(register_url, timeout=2)
+            response = self.get_request().get(register_url, timeout=2)
             if response.status_code == requests.codes.ok:
                 res_string = response.text
             else:
@@ -128,7 +137,7 @@ class GeetestLib(object):
             return 0
 
     def _post_values(self, apiserver, data):
-        response = requests.post(apiserver, data)
+        response = self.get_request().post(apiserver, data)
         return response.text
 
     def _check_result(self, origin, validate):
