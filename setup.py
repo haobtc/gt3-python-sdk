@@ -14,7 +14,7 @@ if __name__ == "__main__":
     setup(
         name="geetest",
         version=VERSION,
-        packages=['sdk'],
+        packages=['gt3'],
         url='http://github.com/GeeTeam/gt-python-sdk',
         license='',
         author='Geetest',
